@@ -3,182 +3,372 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bốc Lì Xì Tết Bính Ngọ 2026</title>
+    <title>Bốc Lì Xì Năm Mới 2026 - Bính Ngọ</title>
     <style>
-        /* CSS - Lớp áo cho trang web */
+        /* --- PHẦN 1: CẤU HÌNH GIAO DIỆN (CSS) --- */
+        :root {
+            --primary-red: #b20a0a; /* Màu đỏ chủ đạo */
+            --gold: #ffd700;       /* Màu vàng kim */
+            --dark-red: #5e0000;
+        }
+
         body {
             margin: 0;
             padding: 0;
-            background-color: #d32f2f; /* Màu đỏ Tết */
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            background: radial-gradient(circle at center, var(--primary-red), var(--dark-red));
+            font-family: 'Arial', sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        /* Canvas cho pháo hoa */
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none; /* Để click xuyên qua canvas vào bao lì xì */
+        }
+
+        /* Container chứa các bao lì xì */
+        .container {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* --- THIẾT KẾ BAO LÌ XÌ --- */
+        .envelope {
+            width: 120px;
+            height: 180px;
+            background: linear-gradient(135deg, #d9281b 0%, #9e0b0b 100%);
+            border: 2px solid #e6b800;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            color: gold;
-        }
-
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
-        }
-
-        .container {
-            position: relative;
-            z-index: 2;
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            text-shadow: 2px 2px 4px #000;
-            margin-bottom: 50px;
-        }
-
-        .envelope-wrapper {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-        }
-
-        .envelope {
-            width: 100px;
-            height: 150px;
-            background-color: #ffeb3b;
-            border: 4px solid #fbc02d;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 50px;
-            cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-            position: relative;
         }
 
         .envelope:hover {
-            transform: translateY(-10px) scale(1.1);
-            box-shadow: 0 15px 30px rgba(255,255,0,0.5);
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(255, 215, 0, 0.4);
         }
 
-        /* Hiệu ứng nảy cho bao lì xì */
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+        /* Hiệu ứng đã mở */
+        .envelope.opened {
+            opacity: 0.5;
+            transform: scale(0.9);
+            cursor: default;
+            filter: grayscale(0.8);
         }
-        .envelope { animation: bounce 2s infinite ease-in-out; }
 
-        /* Popup hiển thị kết quả */
-        #result-modal {
+        /* Trang trí trên bao lì xì */
+        .horse-icon {
+            font-size: 50px;
+            /* Tạo hiệu ứng màu vàng kim cho icon */
+            background: linear-gradient(to bottom, #fff7cc, #ffd700, #b8860b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .text-year {
+            color: var(--gold);
+            font-weight: bold;
+            font-size: 18px;
+            text-transform: uppercase;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .text-fuku {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: var(--gold);
+            color: var(--dark-red);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 20px;
+            border: 2px solid #fff;
+        }
+
+        /* --- POPUP KẾT QUẢ --- */
+        .modal {
             display: none;
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: white;
+            background: #fff;
             padding: 30px;
-            border-radius: 20px;
-            border: 5px solid gold;
+            border-radius: 15px;
             text-align: center;
-            z-index: 10;
-            color: #d32f2f;
-            min-width: 300px;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            z-index: 100;
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.8);
+            border: 4px solid var(--primary-red);
+            width: 80%;
+            max-width: 400px;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        #result-modal h2 { font-size: 3rem; margin: 10px 0; }
-        #result-modal p { font-size: 1.2rem; font-weight: bold; }
-        .btn-close {
-            background: #d32f2f;
+        @keyframes popIn {
+            from { transform: translate(-50%, -50%) scale(0); }
+            to { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .modal h2 {
+            color: var(--primary-red);
+            margin-top: 0;
+            font-size: 28px;
+        }
+
+        .lucky-money {
+            font-size: 40px;
+            color: #d68910; /* Màu vàng đậm */
+            font-weight: bold;
+            margin: 15px 0;
+        }
+
+        .wish-text {
+            font-size: 18px;
+            color: #333;
+            font-style: italic;
+            line-height: 1.5;
+        }
+
+        .close-btn {
+            background: var(--primary-red);
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 10px;
+            padding: 10px 25px;
+            font-size: 16px;
+            border-radius: 5px;
             cursor: pointer;
-            margin-top: 15px;
+            margin-top: 20px;
+            transition: background 0.2s;
+        }
+
+        .close-btn:hover {
+            background: #8a0303;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 99;
         }
     </style>
 </head>
 <body>
 
-    <canvas id="fireworks"></canvas>
+    <canvas id="canvas"></canvas>
 
     <div class="container">
-        <h1>🧧 THỬ VẬN MAY TẾT 2026 🧧</h1>
-        <div class="envelope-wrapper">
-            <div class="envelope" onclick="openLixi()">🧧</div>
-            <div class="envelope" onclick="openLixi()">🧧</div>
-            <div class="envelope" onclick="openLixi()">🧧</div>
+        <div class="envelope" onclick="openEnvelope(this)">
+            <div class="text-fuku">Phúc</div>
+            <div class="horse-icon">🐎</div> <div class="text-year">2026</div>
         </div>
-        <p style="margin-top: 30px; font-weight: bold;">Chạm vào một bao lì xì bất kỳ để nhận lộc!</p>
+        <div class="envelope" onclick="openEnvelope(this)">
+            <div class="text-fuku">Lộc</div>
+            <div class="horse-icon">🐎</div>
+            <div class="text-year">2026</div>
+        </div>
+        <div class="envelope" onclick="openEnvelope(this)">
+            <div class="text-fuku">Thọ</div>
+            <div class="horse-icon">🐎</div>
+            <div class="text-year">2026</div>
+        </div>
+        <div class="envelope" onclick="openEnvelope(this)">
+            <div class="text-fuku">Tài</div>
+            <div class="horse-icon">🐎</div>
+            <div class="text-year">2026</div>
+        </div>
+        <div class="envelope" onclick="openEnvelope(this)">
+            <div class="text-fuku">An</div>
+            <div class="horse-icon">🐎</div>
+            <div class="text-year">2026</div>
+        </div>
     </div>
 
-    <div id="result-modal">
-        <p>Chúc mừng! Bạn nhận được:</p>
-        <h2 id="amount">0đ</h2>
-        <p id="wish">Chúc mừng năm mới!</p>
-        <button class="btn-close" onclick="closeModal()">Nhận lộc và thử lại</button>
+    <div class="overlay" id="overlay"></div>
+    <div class="modal" id="resultModal">
+        <h2>🎉 Chúc Mừng Năm Mới!</h2>
+        <div>Bạn nhận được lì xì:</div>
+        <div class="lucky-money" id="moneyResult">0k</div>
+        <div class="wish-text" id="wishResult">Lời chúc...</div>
+        <button class="close-btn" onclick="closeModal()">Cảm ơn nha!</button>
     </div>
 
     <script>
-        // JS - Bộ não xử lý logic
-
-        // 1. Danh sách mệnh giá và câu chúc (Bạn có thể tự sửa ở đây)
-        const menhGia = ["10.000đ", "20.000đ", "50.000đ", "100.000đ", "200.000đ", "500.000đ"];
-        const cauChuc = [
-            "Tiền vào như nước sông Đà, tiền ra nhỏ giọt như cà phê phin!",
-            "Chúc bạn năm mới thoát ế, bớt khế, thêm nhiều tiền kế!",
-            "Năm mới giàu sang, tiêu tiền khỏi nghĩ, người người để ý!",
-            "Chúc bạn học tập/công việc hanh thông, crush chủ động tỏ tình!",
-            "Sức khỏe dồi dào, ví tiền đầy ắp, tình yêu ngập tràn!"
+        /* --- PHẦN 2: CẤU HÌNH DỮ LIỆU (BẠN SỬA Ở ĐÂY) --- */
+        
+        // Danh sách số tiền (bạn có thể thêm hoặc bớt)
+        const moneyList = [
+            "10.000 VNĐ","10.000 VNĐ",
+            "20.000 VNĐ", "20.000 VNĐ", "20.000 VNĐ", "20.000 VNĐ",
+            "50.000 VNĐ",
+ "50.000 VNĐ", "50.000 VNĐ", "50.000 VNĐ", "50.000 VNĐ", "50.000 VNĐ","50.000 VNĐ","50.000 VNĐ","50.000 VNĐ",
+            "100.000 VNĐ","100.000 VNĐ","100.000 VNĐ",
+            "200.000 VNĐ"
         ];
 
-        // 2. Hàm mở lì xì
-        function openLixi() {
-            const randomAmount = menhGia[Math.floor(Math.random() * menhGia.length)];
-            const randomWish = cauChuc[Math.floor(Math.random() * cauChuc.length)];
+        // Danh sách lời chúc
+        const wishList = [
+            "Bình an, sung túc, vạn phúc đong đầy!",
+            "An khang thịnh vượng, vạn sự như ý!",
+            "Xuân sang phú quý, tài lộc đầy nhà!",
+            "Tân xuân phát tài, công danh rực rỡ!",
+            "Tiền vào như nước, tiền ra nhỏ giọt!"
+        ];
 
-            document.getElementById('amount').innerText = randomAmount;
-            document.getElementById('wish').innerText = randomWish;
-            document.getElementById('result-modal').style.display = 'block';
+        /* --- PHẦN 3: LOGIC XỬ LÝ --- */
+        
+        const modal = document.getElementById('resultModal');
+        const overlay = document.getElementById('overlay');
+        const moneyResult = document.getElementById('moneyResult');
+        const wishResult = document.getElementById('wishResult');
+
+        function openEnvelope(element) {
+            // Nếu đã mở rồi thì không làm gì cả
+            if (element.classList.contains('opened')) return;
+
+            // 1. Đánh dấu đã mở
+            element.classList.add('opened');
+
+            // 2. Chọn ngẫu nhiên tiền và lời chúc
+            const randomMoney = moneyList[Math.floor(Math.random() * moneyList.length)];
+            const randomWish = wishList[Math.floor(Math.random() * wishList.length)];
+
+            // 3. Hiển thị kết quả
+            moneyResult.innerText = randomMoney;
+            wishResult.innerText = randomWish;
+
+            // 4. Kích hoạt pháo hoa nổ tung
+            // Tạo hiệu ứng nổ ngay giữa màn hình
+            createFireworkBurst(window.innerWidth / 2, window.innerHeight / 2);
+            
+            // Hiện popup
+            overlay.style.display = 'block';
+            modal.style.display = 'block';
         }
 
         function closeModal() {
-            document.getElementById('result-modal').style.display = 'none';
+            overlay.style.display = 'none';
+            modal.style.display = 'none';
         }
 
-        // 3. Hiệu ứng pháo hoa (Cơ bản)
-        const canvas = document.getElementById('fireworks');
+        /* --- PHẦN 4: HIỆU ỨNG PHÁO HOA (CANVAS) --- */
+        const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
+        let particles = [];
+
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        function createFirework() {
-            const x = Math.random() * canvas.width;
-            const y = Math.random() * canvas.height;
-            const color = `hsl(${Math.random() * 360}, 100%, 50%)`;
-            
-            for(let i = 0; i < 20; i++) {
-                setTimeout(() => {
-                    ctx.fillStyle = color;
-                    ctx.beginPath();
-                    ctx.arc(x + (Math.random()-0.5)*100, y + (Math.random()-0.5)*100, 3, 0, Math.PI * 2);
-                    ctx.fill();
-                }, i * 50);
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Tạo hạt pháo hoa
+        class Particle {
+            constructor(x, y, color, velocity) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.velocity = velocity;
+                this.alpha = 1;
+                this.friction = 0.96; // Giảm tốc độ
+                this.gravity = 0.05;  // Trọng lực
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+
+            update() {
+                this.velocity.x *= this.friction;
+                this.velocity.y *= this.friction;
+                this.velocity.y += this.gravity;
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+                this.alpha -= 0.01; // Mờ dần
             }
         }
 
-        setInterval(() => {
-            ctx.fillStyle = 'rgba(211, 47, 47, 0.2)'; // Làm mờ vết pháo cũ trên nền đỏ
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            if(Math.random() > 0.9) createFirework();
-        }, 100);
+        function createFireworkBurst(x, y) {
+            const particleCount = 150;
+            const colors = ['#ff0043', '#14fc56', '#1e90ff', '#ffe100', '#ffffff'];
+            
+            for (let i = 0; i < particleCount; i++) {
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const velocity = {
+                    x: (Math.random() - 0.5) * (Math.random() * 15),
+                    y: (Math.random() - 0.5) * (Math.random() * 15)
+                };
+                particles.push(new Particle(x, y, color, velocity));
+            }
+        }
 
+        // Tự động bắn pháo hoa ngẫu nhiên (nền)
+        function randomAutoFirework() {
+            if (Math.random() < 0.03) { // Tỉ lệ xuất hiện
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * (canvas.height / 2); // Chỉ nổ ở nửa trên
+                createFireworkBurst(x, y);
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'; // Tạo hiệu ứng đuôi mờ
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            particles.forEach((particle, index) => {
+                if (particle.alpha > 0) {
+                    particle.draw();
+                    particle.update();
+                } else {
+                    particles.splice(index, 1);
+                }
+            });
+
+            randomAutoFirework();
+        }
+
+        animate();
     </script>
 </body>
 </html>
